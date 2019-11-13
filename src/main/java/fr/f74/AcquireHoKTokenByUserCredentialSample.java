@@ -9,9 +9,9 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.net.ssl.HostnameVerifier;
+/* import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSession; */
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -31,8 +31,8 @@ import com.vmware.sso.client.soaphandlers.SamlTokenExtractionHandler;
 import com.vmware.sso.client.soaphandlers.TimeStampHandler;
 import com.vmware.sso.client.soaphandlers.UserCredentialHandler;
 import com.vmware.sso.client.soaphandlers.WsSecurityUserCertificateSignatureHandler;
-import com.vmware.sso.client.utils.SecurityUtil;
-import com.vmware.sso.client.utils.Utils;
+/* import com.vmware.sso.client.utils.SecurityUtil;
+import com.vmware.sso.client.utils.Utils; */
 
 /**
  * This sample illustrates acquiring a Holder-Of-Key token from SSO server by
