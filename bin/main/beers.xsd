@@ -1,6 +1,6 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns:tns="http://memorynotfound.com/beer"
-           targetNamespace="http://memorynotfound.com/beer"
+           xmlns:tns="http://f74.fr/beer"
+           targetNamespace="http://f74.fr/beer"
            elementFormDefault="qualified">
 
     <xs:element name="getBeerRequest">
