@@ -59,6 +59,8 @@ import java.security.NoSuchAlgorithmException; */
 
 import fr.f74.AcquireHoKTokenByUserCredentialSample;
 import fr.f74.GetCurrentTime;
+import fr.f74.connection.ConnectedVimServiceBase;
+import fr.f74.connection.BasicConnection;
 
 @SpringBootApplication
 public class Application {
@@ -117,9 +119,15 @@ public class Application {
                 AcquireHoKTokenByUserCredentialSample  tokenClient = new AcquireHoKTokenByUserCredentialSample();
                 Utils.printToken(tokenClient.getToken(argsCnx,userCert.getPrivateKey(),
                 userCert.getUserCert()));
+                                
+                BasicConnection connect = new BasicConnection();   
                 
-                GetCurrentTime getCurrentTime = new GetCurrentTime();    
-
+                connect.setUrl("https://10.200.19.122/sts/STSService");
+                connect.setPassword("visu2016"); 
+                connect.setUsername("visu@vsphere.local");
+                connect.connect(); 
+                GetCurrentTime getCurrentTime = new GetCurrentTime();
+                getCurrentTime.setConnection(connect);
                 getCurrentTime.getCurrentTime();
 
                 return;

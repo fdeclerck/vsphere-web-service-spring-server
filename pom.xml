@@ -41,6 +41,12 @@
 			<artifactId>wsdl4j</artifactId>
 		</dependency>
 
+        <dependency>
+            <groupId>com.vmware</groupId>
+            <artifactId>ssoclient</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>

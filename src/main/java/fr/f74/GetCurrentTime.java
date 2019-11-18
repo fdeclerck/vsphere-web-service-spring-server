@@ -12,8 +12,8 @@
 
 package fr.f74;
 
-import com.vmware.common.annotations.Action;
-import com.vmware.common.annotations.Sample;
+//import com.vmware.common.annotations.Action;
+//import com.vmware.common.annotations.Sample;
 import fr.f74.connection.ConnectedVimServiceBase;
 import com.vmware.vim25.RuntimeFaultFaultMsg;
 
@@ -36,17 +36,17 @@ import java.text.SimpleDateFormat;
  * --url [webservicesurl] --username [Username] --password [password]
  * </pre>
  */
-@Sample(
+/* @Sample(
         name = "get-current-time",
         description = "This sample gets the current time of the vSphere Server"
-)
+) */
 public class GetCurrentTime extends ConnectedVimServiceBase {
     /**
      * This method retrieves the current time from the server and prints it.
      *
      * @throws RuntimeFaultFaultMsg
      */
-    @Action
+ /*    @Action */
     public void getCurrentTime() throws RuntimeFaultFaultMsg {
         XMLGregorianCalendar ct = vimPort.currentTime(this.getServiceInstanceReference());
         SimpleDateFormat sdf =

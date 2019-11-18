@@ -125,12 +125,14 @@ public abstract class ConnectedVimServiceBase {
 
     public BasicConnection basicConnectionFromConnection(final Connection original) {
         BasicConnection connection = new BasicConnection();
-        //connection.setUrl(original.getUrl());
-        //connection.setUsername(original.getUsername());
-        //connection.setPassword(original.getPassword());
-        connection.setUrl("https://10.200.19.122/sts/STSService");
-        connection.setUsername("visu@vsphere.local");
-        connection.setPassword("visu2016");
+        connection.setUrl(original.getUrl());
+        connection.setUsername(original.getUsername());
+        connection.setPassword(original.getPassword());
+        //connection.setUrl("https://10.200.19.122/sts/STSService");
+        //connection.setUsername("visu@vsphere.local");
+        //connection.setPassword("visu2016");
+        //System.out
+        //.println("§§§§§§§§§§§§§§§§§§§§§§§§ CALL basicConnectionFromConnection §§§§§§§§§§§§§§§§§§§§§§§§§");
         return connection;
     }
 
