@@ -105,6 +105,9 @@ public abstract class ConnectedVimServiceBase {
         }
 
         try {
+            connection.setUrl("https://10.200.19.122/sts/STSService");
+            connection.setPassword("visu2016"); 
+            connection.setUsername("visu@vsphere.local");
             connection.connect();
             this.waitForValues = new WaitForValues(connection);
             this.getMOREFs = new GetMOREF(connection);

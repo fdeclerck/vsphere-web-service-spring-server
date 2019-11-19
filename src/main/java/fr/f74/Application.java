@@ -1,8 +1,10 @@
-
 package fr.f74;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import org.springframework.context.ApplicationContext;
+
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +22,9 @@ import org.oasis_open.docs.ws_sx.ws_trust._200512.RequestSecurityTokenType;
 import org.oasis_open.docs.wss._2004._01.oasis_200401_wss_wssecurity_utility_1_0.AttributedDateTime;
 import org.w3c.dom.Element;
  */
+
+import java.util.Arrays; 
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
@@ -58,15 +63,25 @@ import java.security.NoSuchAlgorithmException; */
 // import com.vmware.common.samples.SystemParameters;
 
 import fr.f74.AcquireHoKTokenByUserCredentialSample;
-import fr.f74.GetCurrentTime;
-import fr.f74.connection.ConnectedVimServiceBase;
-import fr.f74.connection.BasicConnection;
+import fr.f74.connection.helpers.builders.*;
+import com.vmware.connection.ConnectedVimServiceBase;
+import com.vmware.connection.SsoConnection;
+import com.vmware.connection.BasicConnection;
 
 @SpringBootApplication
 public class Application {
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class);
+        //SpringApplication.run(Application.class);
+        ApplicationContext ctx = SpringApplication.run(Application.class, args);
+        
+        System.out.println("Let's inspect the beans provided by Spring Boot:");
+        
+        String[] beanNames = ctx.getBeanDefinitionNames();
+        Arrays.sort(beanNames);
+        for (String beanName : beanNames) {
+            System.out.println(beanName);
+        }
     }
     @Bean
 	CommandLineRunner  acquireHoKTokenByUserCredential() {
@@ -80,35 +95,7 @@ public class Application {
             };
             HttpsURLConnection.setDefaultHostnameVerifier(hv);
             Utils.trustAllHttpsCertificates();
-            if (args.length == 3) {
-                System.out
-                        .println("Aquiring a HoK token by using user credentials, "
-                                + "use the pre-generated private key and certificate ");
-    
-                SecurityUtil userCert = SecurityUtil.loadFromDefaultFiles();
-                AcquireHoKTokenByUserCredentialSample  tokenClient = new AcquireHoKTokenByUserCredentialSample();
-                Utils.printToken(tokenClient.getToken(args, userCert.getPrivateKey(),
-                userCert.getUserCert()));
-            } else if (args.length == 5) {
-                System.out
-                        .println("Aquiring a HoK token by using user credentials, "
-                                + "private key and certificate ");
-                SecurityUtil userCert = SecurityUtil.loadFromFiles(args[3], args[4]);
-                AcquireHoKTokenByUserCredentialSample  tokenClient = new AcquireHoKTokenByUserCredentialSample();
-                Utils.printToken(tokenClient.getToken(args, userCert.getPrivateKey(),
-                userCert.getUserCert()));
-            } else if (args.length == 6) {
-                System.out
-                        .println("Aquiring a HoK token by using user credentials, "
-                                + "private key and certificate ");
-                SecurityUtil userCert = SecurityUtil.loadFromKeystore(args[3], args[4], args[5]);
-                AcquireHoKTokenByUserCredentialSample  tokenClient = new AcquireHoKTokenByUserCredentialSample();
-                Utils.printToken(tokenClient.getToken(args, userCert.getPrivateKey(),
-                userCert.getUserCert()));        
-            } else {
-                System.out
-                        .println("args.length : "
-                                + args.length);
+
                 String username = "visu2016";
                 String password = "visu@vsphere.local"; 
                 String STSurl = "https://10.200.19.122/sts/STSService"; 
@@ -119,19 +106,24 @@ public class Application {
                 AcquireHoKTokenByUserCredentialSample  tokenClient = new AcquireHoKTokenByUserCredentialSample();
                 Utils.printToken(tokenClient.getToken(argsCnx,userCert.getPrivateKey(),
                 userCert.getUserCert()));
-                                
-                BasicConnection connect = new BasicConnection();   
+                System.out.println("SsoConnection");                
+                SsoConnection connect = new SsoConnection();   
+                //BasicConnection connect = new BasicConnection();   
                 
                 connect.setUrl("https://10.200.19.122/sts/STSService");
                 connect.setPassword("visu2016"); 
                 connect.setUsername("visu@vsphere.local");
-                connect.connect(); 
-                GetCurrentTime getCurrentTime = new GetCurrentTime();
-                getCurrentTime.setConnection(connect);
-                getCurrentTime.getCurrentTime();
-
-                return;
-            }
+                System.out.println("SsoConnection.coonect()"); 
+                //connect.connect(); 
+                //Utils.printToken(connect.login());
+                //System.out
+                //        .println("getServiceInstanceName : "
+                //                + connect.getServiceInstanceName());
+                //GetCurrentTime getCurrentTime = new GetCurrentTime();
+                //getCurrentTime.setHostConnection(Boolean.FALSE);
+                //getCurrentTime.setConnection(connect);
+                //getCurrentTime.getCurrentTime();
+                
         };
     }   
 }

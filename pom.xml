@@ -40,10 +40,41 @@
 			<groupId>wsdl4j</groupId>
 			<artifactId>wsdl4j</artifactId>
 		</dependency>
+<!-- pour installer les jar Vmware dans le repo local : 
 
+mvn install:install-file -Dfile=./lib/ssoclient.jar -DgroupId=com.vmware -DartifactId=ssoclient -Dversion=1.0.0 -Dpackaging=jar
+mvn install:install-file -Dfile=./lib/ssosamples.jar -DgroupId=com.vmware -DartifactId=ssosamples -Dversion=1.0.0 -Dpackaging=jar
+mvn install:install-file -Dfile=./lib/samples-annotations-1.0.0.jar -DgroupId=com.vmware -DartifactId=samples-annotations -Dversion=1.0.0 -Dpackaging=jar
+mvn install:install-file -Dfile=./lib/samples-core-1.0.0.jar -DgroupId=com.vmware -DartifactId=samples-core -Dversion=1.0.0 -Dpackaging=jar
+mvn install:install-file -Dfile=./lib/vim25.jar -DgroupId=com.vmware -DartifactId=vim25 -Dversion=1.0.0 -Dpackaging=jar
+ -->
         <dependency>
             <groupId>com.vmware</groupId>
             <artifactId>ssoclient</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vmware</groupId>
+            <artifactId>ssosamples</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vmware</groupId>
+            <artifactId>vim25</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vmware</groupId>
+            <artifactId>samples-annotations</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vmware</groupId>
+            <artifactId>samples-core</artifactId>
             <version>1.0.0</version>
         </dependency>
 
