@@ -82,8 +82,19 @@ public class Application {
         for (String beanName : beanNames) {
             System.out.println(beanName);
         }
+        HostnameVerifier hv = new HostnameVerifier() {
+            @Override
+            public boolean verify(String urlHostName, SSLSession session) {
+                return true;
+            }
+        };
+        HttpsURLConnection.setDefaultHostnameVerifier(hv);
+        
+        Utils.trustAllHttpsCertificates();
+
     }
-    @Bean
+}
+/*     @Bean
 	CommandLineRunner  acquireHoKTokenByUserCredential() {
 		return args -> {
                         
@@ -106,24 +117,6 @@ public class Application {
                 AcquireHoKTokenByUserCredentialSample  tokenClient = new AcquireHoKTokenByUserCredentialSample();
                 Utils.printToken(tokenClient.getToken(argsCnx,userCert.getPrivateKey(),
                 userCert.getUserCert()));
-                System.out.println("SsoConnection");                
-                SsoConnection connect = new SsoConnection();   
-                //BasicConnection connect = new BasicConnection();   
-                
-                connect.setUrl("https://10.200.19.122/sts/STSService");
-                connect.setPassword("visu2016"); 
-                connect.setUsername("visu@vsphere.local");
-                System.out.println("SsoConnection.coonect()"); 
-                //connect.connect(); 
-                //Utils.printToken(connect.login());
-                //System.out
-                //        .println("getServiceInstanceName : "
-                //                + connect.getServiceInstanceName());
-                //GetCurrentTime getCurrentTime = new GetCurrentTime();
-                //getCurrentTime.setHostConnection(Boolean.FALSE);
-                //getCurrentTime.setConnection(connect);
-                //getCurrentTime.getCurrentTime();
-                
         };
     }   
-}
+} */

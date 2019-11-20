@@ -31,17 +31,11 @@ import java.util.Map;
 
 import static com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample.getToken;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Demonstrates SSO with vCenter's SSO service. This only demonstrates HolderOfKey based logins.
  * @see com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample
  */
 public class SsoConnection implements Connection {
-
-    private static final Logger log = LoggerFactory.getLogger(SsoConnection.class);
-
     public final static String SSO_URL = "sso.url";
 
     private VimService vimService;

@@ -12,9 +12,10 @@
 
 package fr.f74;
 
-import com.vmware.common.annotations.Action;
-import com.vmware.common.annotations.Sample;
+//import com.vmware.common.annotations.Action;
+//import com.vmware.common.annotations.Sample;
 import com.vmware.connection.ConnectedVimServiceBase;
+import com.vmware.vim25.AboutInfo;
 //import com.vmware.vim25.RuntimeFaultFaultMsg;
 //import com.vmware.vim25.AboutInfo;
 import com.vmware.vim25.*;
@@ -27,18 +28,46 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
-import static com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample.getToken;
+import fr.f74.AcquireHoKTokenByUserCredentialSample;
+import fr.f74.connection.helpers.builders.*;
+
+//import static com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample.getToken;
 //import com.vmware.GetCurrentTime;
-import com.vmware.connection.ConnectedVimServiceBase;
+//import com.vmware.connection.ConnectedVimServiceBase;
+import com.vmware.connection.Connection;
 import com.vmware.connection.SsoConnection;
 import com.vmware.connection.BasicConnection;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.vmware.sso.client.soaphandlers.*;
+import com.vmware.sso.client.utils.SecurityUtil;
+import com.vmware.sso.client.utils.Utils;
+import com.vmware.vim25.*;
+import com.vmware.vsphere.soaphandlers.HeaderCookieExtractionHandler;
+import org.w3c.dom.Element;
+
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.MessageContext;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vmware.sso.client.soaphandlers.*;
+import com.vmware.sso.client.utils.SecurityUtil;
+import com.vmware.sso.client.utils.Utils;
+import com.vmware.vim25.*;
+import com.vmware.vsphere.soaphandlers.HeaderCookieExtractionHandler;
+
+//import static com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample.getToken;
+import static fr.f74.AcquireHoKTokenByUserCredentialSample.getToken;
 
 /**
  * <pre>
@@ -57,39 +86,170 @@ import org.slf4j.LoggerFactory;
  * </pre>
  */
 @RestController
-public class TestFranck extends ConnectedVimServiceBase {
+public class TestFranck extends SsoConnection {
 
     private static final Logger log = LoggerFactory.getLogger(TestFranck.class);
 
-        //@Action
-        @RequestMapping("/connect")
-        public String fairechose() {
-                
-               //System.out.printf("connected to: %s", connection.getServiceContent().getAbout().getLicenseProductName());
-               //System.out.printf("ServiceInstanceReference: %s", connection.getServiceInstanceReference());
-               String[] argsCnx = {"https://10.200.19.122/sts/STSService","visu@vsphere.local","visu2016"} ;
+    VimService vimService;
+    VimPortType vimPort;
+    ServiceContent serviceContent;
+    UserSession userSession;
+    ManagedObjectReference svcInstRef = null;
+    String url = "https://10.200.19.122/sdk";
+    String username = "visu2016";
+    String password = "visu@vsphere.local"; 
+    String STSurl = "https://10.200.19.122/sts/STSService"; 
+    String[] argsCnx = {"https://10.200.19.122/sts/STSService","visu@vsphere.local","visu2016"} ;
+    URL ssoUrl = null;
+    @SuppressWarnings("rawtypes")
+    Map headers;
+    PrivateKey privateKey;
+    X509Certificate certificate;   
 
-                SecurityUtil userCert = SecurityUtil.loadFromDefaultFiles();
-                AcquireHoKTokenByUserCredentialSample  tokenClient = new AcquireHoKTokenByUserCredentialSample();
-                //Element token = tokenClient.getToken(argsCnx,userCert.getPrivateKey(),userCert.getUserCert());
-                Utils.printToken(tokenClient.getToken(argsCnx,userCert.getPrivateKey(),userCert.getUserCert()));
-                //String idToken = Utils.getNodeProperty(token, "ID");
-                System.out.println("SsoConnection");                
-                SsoConnection connect = new SsoConnection();   
-                //BasicConnection connect = new BasicConnection();   
-                
-               //String usernom = connection.getUsername(); 
-               //System.out.printf("getUsername(): %s", usernom);
-               //System.out.printf("getUrl() : %s", connection.getUrl());
-        return  "connected";
+    @Override
+    public Element login() {
+        Element token = null;
+        try {
+            //String[] args = {getSsoUrl().toString(), username, password};
+            HostnameVerifier hv = new HostnameVerifier() {
+                @Override
+                public boolean verify(String urlHostName, SSLSession session) {
+                    return true;
+                }
+            };
+            HttpsURLConnection.setDefaultHostnameVerifier(hv);
+            
+            Utils.trustAllHttpsCertificates();
+            String[] argsCnx = {"https://10.200.19.122/sts/STSService","visu@vsphere.local","visu2016"} ;
+
+            SecurityUtil userCert = SecurityUtil.loadFromDefaultFiles();
+            
+            privateKey = userCert.getPrivateKey();
+            certificate = userCert.getUserCert();
+            String[] args = argsCnx;
+            token = getToken(args, privateKey, certificate);
+            Utils.printToken(token);
+        } catch (Exception e) {
+            throw new SSOLoginException("login fault", (e.getCause() != null)?e.getCause():e);
         }
+        return token;
+    }
 
-        @RequestMapping("/test")
-        public String index() {
-        return "Greetings from TestFranck";
+    @Override
+    public void loadUserCert() throws Exception{
+        SecurityUtil userCert = SecurityUtil.loadFromDefaultFiles();
+            
+            privateKey = userCert.getPrivateKey();
+            certificate = userCert.getUserCert();
+        return;
     }
-    
+
+    @RequestMapping("/ssoconnect")
+    public String ssoconnect() {
+        this.connect();
+
+        return "ssoconnected";
     }
+    @Override
+    public Connection connect() {
+        if (!isConnected()) {
+            try {
+                this._connection();
+            } catch (Exception e) {
+                Throwable cause = (e.getCause() != null)?e.getCause():e;
+                throw new SSOLoginException(
+                        "could not connect: " + e.getMessage() + " : " + cause.getMessage(), cause
+                );
+            }
+        }
+        return this;
+    }
+
+    @SuppressWarnings("rawtypes")
+	private void _connection() throws RuntimeFaultFaultMsg, InvalidLocaleFaultMsg, InvalidLoginFaultMsg, Exception {
+        HostnameVerifier hv = new HostnameVerifier() {
+            @Override
+            public boolean verify(String urlHostName, SSLSession session) {
+                return true;
+            }
+        };
+        HttpsURLConnection.setDefaultHostnameVerifier(hv);
+        
+        Utils.trustAllHttpsCertificates();
+        loadUserCert();
+
+        Element token = this.login();
+        Utils.printToken(token);
+        HeaderCookieExtractionHandler cookieExtracter = new HeaderCookieExtractionHandler();
+        System.out.println("setupVimService(token, cookieExtracter)");
+        vimService = setupVimService(token, cookieExtracter);
+        System.out.println("vimService.getVimPort()");
+        vimPort = vimService.getVimPort();
+        System.out.println("getRequestContext()");
+        Map<String, Object> ctxt =
+                ((BindingProvider) vimPort).getRequestContext();
+        System.out.println("ctxt.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url.toString())");
+        ctxt.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url);
+        ctxt.put(BindingProvider.SESSION_MAINTAIN_PROPERTY, true);
+        //serviceContent = vimPort.retrieveServiceContent(this.getServiceInstanceReference());
+        XMLGregorianCalendar ct = vimPort.currentTime(this.getServiceInstanceReference());
+        SimpleDateFormat sdf =
+                new SimpleDateFormat("yyyy-MM-dd 'T' HH:mm:ss.SSSZ");
+        System.out.println("Server current time: "
+                + sdf.format(ct.toGregorianCalendar().getTime()));
+        //return sdf.format(ct.toGregorianCalendar().getTime());
+    }
+
+    @Override
+    public ManagedObjectReference getServiceInstanceReference() {
+        if (svcInstRef == null) {
+            ManagedObjectReference ref = new ManagedObjectReference();
+            ref.setType(super.getServiceInstanceName());
+            ref.setValue(super.getServiceInstanceName());
+            svcInstRef = ref;
+        }
+        return this.svcInstRef;
+    }
+    //@Action
+    @RequestMapping("/connect")
+    public String fairechose() {
+         return  "fairechose";
+    }
+
+    @RequestMapping("/test")
+    public String index() {
+    return "Greetings from TestFranck";
+    }
+
+    @RequestMapping("/test2")
+    public String index2() {
+    return "Greetings2 from TestFranck";
+    }
+
+    public VimService setupVimService(Element token, PrivateKey privateKey, X509Certificate certificate, SSOHeaderHandler... handlers) {
+        VimService vimSvc = new VimService();
+        HeaderHandlerResolver handlerResolver = new HeaderHandlerResolver();
+        handlerResolver.addHandler(new TimeStampHandler());
+        handlerResolver.addHandler(new SamlTokenHandler(token));
+        handlerResolver.addHandler(new WsSecuritySignatureAssertionHandler(
+                privateKey, certificate, Utils
+                .getNodeProperty(token, "ID")));
+        for (SSOHeaderHandler handler : handlers) {
+            handlerResolver.addHandler(handler);
+        }
+        vimSvc.setHandlerResolver(handlerResolver);
+        return vimSvc;
+    }
+
+    public String getCurrentTime() throws RuntimeFaultFaultMsg {
+        XMLGregorianCalendar ct = vimPort.currentTime(this.getServiceInstanceReference());
+        SimpleDateFormat sdf =
+                new SimpleDateFormat("yyyy-MM-dd 'T' HH:mm:ss.SSSZ");
+        System.out.println("Server current time: "
+                + sdf.format(ct.toGregorianCalendar().getTime()));
+        return sdf.format(ct.toGregorianCalendar().getTime());
+    }
+}
 
 /* public class TestFranck {
 
