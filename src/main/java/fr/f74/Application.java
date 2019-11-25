@@ -74,6 +74,8 @@ public class Application {
     public static void main(String[] args) {
         //SpringApplication.run(Application.class);
         ApplicationContext ctx = SpringApplication.run(Application.class, args);
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(VsphereClientConfiguration.class);
+		System.out.println(context.getBeanDefinitionCount());
         
         System.out.println("Let's inspect the beans provided by Spring Boot:");
         
@@ -91,6 +93,8 @@ public class Application {
         HttpsURLConnection.setDefaultHostnameVerifier(hv);
         
         Utils.trustAllHttpsCertificates();
+
+        VsphereClientAuth client = context.getBean(VsphereClientAuth.class);
 
     }
 }

@@ -104,29 +104,53 @@ public class TestFranck extends SsoConnection {
     @SuppressWarnings("rawtypes")
     Map headers;
     PrivateKey privateKey;
-    X509Certificate certificate;   
+    X509Certificate certificate;  
+
+    private ManagedObjectReference propCollectorRef; 
+
+    //HttpsURLConnection.setDefaultHostnameVerifier(hv);
+            
+    //Utils.trustAllHttpsCertificates();
+
+    @RequestMapping("/ssoconnect")
+    public String ssoconnect() {
+
+        final TestFranck ssoconnection = new TestFranck();
+
+        HostnameVerifier hv = new HostnameVerifier() {
+            @Override
+            public boolean verify(String urlHostName, SSLSession session) {
+                return true;
+            }
+        };
+
+        try {
+            HttpsURLConnection.setDefaultHostnameVerifier(hv);
+
+            Utils.trustAllHttpsCertificates();
+            
+            loadUserCert();
+    
+            ssoconnection.connect();
+        } catch (Exception e) {
+            throw new SSOLoginException("login fault", (e.getCause() != null)?e.getCause():e);
+        }
+
+        return "ssoconnected";
+    }
 
     @Override
     public Element login() {
         Element token = null;
         try {
             //String[] args = {getSsoUrl().toString(), username, password};
-            HostnameVerifier hv = new HostnameVerifier() {
-                @Override
-                public boolean verify(String urlHostName, SSLSession session) {
-                    return true;
-                }
-            };
-            HttpsURLConnection.setDefaultHostnameVerifier(hv);
-            
-            Utils.trustAllHttpsCertificates();
             String[] argsCnx = {"https://10.200.19.122/sts/STSService","visu@vsphere.local","visu2016"} ;
-
-            SecurityUtil userCert = SecurityUtil.loadFromDefaultFiles();
+            
+            String[] args = argsCnx;
+            SecurityUtil userCert = SecurityUtil.loadFromDefaultFiles();    
             
             privateKey = userCert.getPrivateKey();
             certificate = userCert.getUserCert();
-            String[] args = argsCnx;
             token = getToken(args, privateKey, certificate);
             Utils.printToken(token);
         } catch (Exception e) {
@@ -137,19 +161,13 @@ public class TestFranck extends SsoConnection {
 
     @Override
     public void loadUserCert() throws Exception{
-        SecurityUtil userCert = SecurityUtil.loadFromDefaultFiles();
+        SecurityUtil userCert = SecurityUtil.loadFromDefaultFiles();    
             
             privateKey = userCert.getPrivateKey();
             certificate = userCert.getUserCert();
         return;
     }
 
-    @RequestMapping("/ssoconnect")
-    public String ssoconnect() {
-        this.connect();
-
-        return "ssoconnected";
-    }
     @Override
     public Connection connect() {
         if (!isConnected()) {
@@ -167,16 +185,6 @@ public class TestFranck extends SsoConnection {
 
     @SuppressWarnings("rawtypes")
 	private void _connection() throws RuntimeFaultFaultMsg, InvalidLocaleFaultMsg, InvalidLoginFaultMsg, Exception {
-        HostnameVerifier hv = new HostnameVerifier() {
-            @Override
-            public boolean verify(String urlHostName, SSLSession session) {
-                return true;
-            }
-        };
-        HttpsURLConnection.setDefaultHostnameVerifier(hv);
-        
-        Utils.trustAllHttpsCertificates();
-        loadUserCert();
 
         Element token = this.login();
         Utils.printToken(token);
@@ -191,7 +199,10 @@ public class TestFranck extends SsoConnection {
         System.out.println("ctxt.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url.toString())");
         ctxt.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, url);
         ctxt.put(BindingProvider.SESSION_MAINTAIN_PROPERTY, true);
-        //serviceContent = vimPort.retrieveServiceContent(this.getServiceInstanceReference());
+        System.out.println("serviceContent = vimPort.retrieveServiceContent(this.getServiceInstanceReference())");
+        serviceContent = vimPort.retrieveServiceContent(this.getServiceInstanceReference());
+        System.out.println("propCollectorRef = serviceContent.getPropertyCollector()");
+        propCollectorRef = serviceContent.getPropertyCollector();
         XMLGregorianCalendar ct = vimPort.currentTime(this.getServiceInstanceReference());
         SimpleDateFormat sdf =
                 new SimpleDateFormat("yyyy-MM-dd 'T' HH:mm:ss.SSSZ");
@@ -201,11 +212,26 @@ public class TestFranck extends SsoConnection {
     }
 
     @Override
+    public String getServiceInstanceName() {
+        return "ServiceInstanceTestFranck"; // Theoretically this could change but it never does in these samples.
+    }
+
+    /**
+     * the cached headers gleaned from the last connection atttempt
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+	@Override
+    public Map getHeaders() {
+        return this.headers;
+    }
+
+    @Override
     public ManagedObjectReference getServiceInstanceReference() {
         if (svcInstRef == null) {
             ManagedObjectReference ref = new ManagedObjectReference();
-            ref.setType(super.getServiceInstanceName());
-            ref.setValue(super.getServiceInstanceName());
+            ref.setType(this.getServiceInstanceName());
+            ref.setValue(this.getServiceInstanceName());
             svcInstRef = ref;
         }
         return this.svcInstRef;
@@ -224,6 +250,21 @@ public class TestFranck extends SsoConnection {
     @RequestMapping("/test2")
     public String index2() {
     return "Greetings2 from TestFranck";
+    }
+
+    @Override
+    public VimService getVimService() {
+        return this.vimService;
+    }
+
+    @Override
+    public VimPortType getVimPort() {
+        return this.vimPort;
+    }
+
+    @Override
+    public ServiceContent getServiceContent() {
+        return this.serviceContent;
     }
 
     public VimService setupVimService(Element token, PrivateKey privateKey, X509Certificate certificate, SSOHeaderHandler... handlers) {
