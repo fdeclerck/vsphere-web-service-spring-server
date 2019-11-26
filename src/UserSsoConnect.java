@@ -56,16 +56,23 @@ import com.vmware.vim25.VimService; */
 //import com.vmware.vsphere.soaphandlers.HeaderCookieExtractionHandler;
 //fin de login
 
-@Component
-public class UserConnect {
+import fr.f74.SsoConnectionImpl;
+
+@RestController
+public class UserSsoConnect {
 
     @Autowired
     private UserProfile userProfile;
 
-   @Autowired
+    @Autowired
     private AcquireHoKTokenByUserCredential acquireHoKTokenByUserCredential;
 
-    public String connect() {
+    @Autowired
+    private Connection ssoConnection;
+   
+
+    @RequestMapping("/userssoconnect")
+    public String userssoconnect() {
 
         HostnameVerifier hv = new HostnameVerifier() {
         @Override
@@ -74,7 +81,7 @@ public class UserConnect {
         }
         };
 
-        try {
+        //ssoConnection = (Connection) appContext.getBean("ssoConnection");
 
             HttpsURLConnection.setDefaultHostnameVerifier(hv);
 
@@ -84,36 +91,24 @@ public class UserConnect {
 
             //ssoconnection.connect();
 
-            userProfile.setPrivateKey();
-            userProfile.setCertificate();
-            System.out.println("token = acquireHoKTokenByUserCredential.getToken");
-            Element token = acquireHoKTokenByUserCredential.getToken(userProfile.getArgsCnx(), userProfile.getPrivateKey(), userProfile.getCertificate());
-            Utils.printToken(token);
+            //userProfile.setPrivateKey();
+            //userProfile.setCertificate();
+            System.out.println("ssoConnection");
+
+            ssoConnection.setUrl(userProfile.getUrl());
+            System.out.println("ssoConnection.getUrl : " + ssoConnection.getUrl());
+            ssoConnection.setUsername(userProfile.getUsername());
+            ssoConnection.setPassword(userProfile.getPassword());
+            System.out.println("ssoConnection.connect()");
+            ssoConnection.connect();
+            System.out.println("après ssoConnection.connect()");
+        
+            System.out.println("ssoConnection.getHost() : " + ssoConnection.getHost());
+            //Element token = acquireHoKTokenByUserCredential.getToken(userProfile.getArgsCnx(), userProfile.getPrivateKey(), userProfile.getCertificate());
+            //Utils.printToken(token);
             //loginUsingSAMLToken(token,userProfile.getUrl(),userProfile.getPrivateKey(), userProfile.getCertificate());
 
 
-        } catch (Exception e) {
-            //throw new SSOLoginException("login fault", (e.getCause() != null)?e.getCause():e);
-            System.out.println("userconnect() exception : " + e.getMessage());
-            
-        }
-        
-        return "userconnect";
-
-    }
-    
-    public VimService setupVimService(Element token, SSOHeaderHandler... handlers) {
-        VimService vimSvc = new VimService();
-        HeaderHandlerResolver handlerResolver = new HeaderHandlerResolver();
-        handlerResolver.addHandler(new TimeStampHandler());
-        handlerResolver.addHandler(new SamlTokenHandler(token));
-        handlerResolver.addHandler(new WsSecuritySignatureAssertionHandler(
-                privateKey, certificate, Utils
-                .getNodeProperty(token, "ID")));
-        for (SSOHeaderHandler handler : handlers) {
-            handlerResolver.addHandler(handler);
-        }
-        vimSvc.setHandlerResolver(handlerResolver);
-        return vimSvc;
-    }
+            return "userssoconnect";
+    } 
 }

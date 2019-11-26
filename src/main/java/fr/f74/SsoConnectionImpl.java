@@ -10,7 +10,7 @@
  * NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package fr.f74.connection;
+package fr.f74;
 
 //import com.vmware.common.Main;
 import com.vmware.sso.client.soaphandlers.*;
@@ -32,16 +32,31 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample.getToken;
+import fr.f74.connection.*;
+
+//import static com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample.getToken;
+
+import static fr.f74.AcquireHoKTokenByUserCredential.getToken;
+
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
  * Demonstrates SSO with vCenter's SSO service. This only demonstrates HolderOfKey based logins.
  * @see com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample
  */
-public class SsoConnection implements Connection {
 
-    private static final Logger log = LoggerFactory.getLogger(SsoConnection.class);
+//@Component 
+public class SsoConnectionImpl implements Connection {
+
+    private static final Logger log = LoggerFactory.getLogger(SsoConnectionImpl.class);
+
+    /* @Autowired
+    private UserProfile userProfile;
+
+    @Autowired
+    private AcquireHoKTokenByUserCredential acquireHoKTokenByUserCredential; */
 
     public final static String SSO_URL = "sso.url";
 
@@ -81,11 +96,13 @@ public class SsoConnection implements Connection {
      * @return the URL for the SSO services
      * @throws MalformedURLException
      */
+  
     public URL getSsoUrl() throws MalformedURLException {
         if (ssoUrl != null) {
             return ssoUrl;
         }
-        String ssoUrlString = System.getProperty(SSO_URL, getDefaultSsoUrl());
+        //String ssoUrlString = System.getProperty(SSO_URL, getDefaultSsoUrl());
+        String ssoUrlString = "https://10.200.19.122/sts/STSService";
         ssoUrl = new URL(ssoUrlString);
         return ssoUrl;
     }
@@ -111,7 +128,7 @@ public class SsoConnection implements Connection {
         String host = System.getProperty("sso.host", url.getHost());
         String port = System.getProperty("sso.port", "");
         String path = System.getProperty("sso.path", "/sts/STSService");
-        return String.format("https://%s%s%s", host, port, path);
+        return String.format("https://%s:%s%s", host, port, path);
     }
 
     @Override
@@ -217,6 +234,9 @@ public class SsoConnection implements Connection {
         Element token = null;
         try {
             String[] args = {getSsoUrl().toString(), username, password};
+            
+            System.out.println("username : " + username + " password : " + password + " ssourl : " + ssoUrl);
+
             token = getToken(args, privateKey, certificate);
         } catch (Exception e) {
             throw new SSOLoginException("login fault", (e.getCause() != null)?e.getCause():e);
@@ -301,26 +321,11 @@ public class SsoConnection implements Connection {
      * file system, calls "generate"
      */
     public void loadUserCert() throws Exception{
-        if (privateKey != null && certificate != null) {
-            return;
-        }
-
-        if (pkeyFileName != null && certFileName != null) {
-            SecurityUtil securityUtil = SecurityUtil.loadFromFiles(pkeyFileName, certFileName);
-            privateKey = securityUtil.getPrivateKey();
-            certificate = securityUtil.getUserCert();
-        }
-
-        if (privateKey == null || certificate == null) {
+        
             SecurityUtil securityUtil = SecurityUtil.loadFromDefaultFiles();
             privateKey = securityUtil.getPrivateKey();
             certificate = securityUtil.getUserCert();
-        }
-
-        if (privateKey == null || certificate == null) {
-            throw new Exception("Please specify the certificate and key files");
-        }
-        return;
+            return;
     }
 
     /**

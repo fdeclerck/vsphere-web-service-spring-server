@@ -1,20 +1,25 @@
 
 package fr.f74;
 
+import fr.f74.connection.*;
+//import com.vmware.connection.helpers.*;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.ws.client.support.interceptor.ClientInterceptor;
+//import org.springframework.context.annotation.PropertySource;
+//import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+//import org.springframework.ws.client.support.interceptor.ClientInterceptor;
 //import org.springframework.ws.soap.security.wss4j.Wss4jSecurityInterceptor;
 
 @Configuration
+//@PropertySource("classpath:/fr/f74/resources/vsphere.properties")
 public class VsphereClientConfiguration {
 
-	@Bean
+	//@Inject Environment env;
+
+/* 	@Bean
 	public Jaxb2Marshaller marshaller() {
 		Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		// this package must match the package in the <generatePackage> specified in
-		// pom.xml
 		marshaller.setContextPath("com.vmware.vim25");
 		return marshaller;
 	}
@@ -26,6 +31,21 @@ public class VsphereClientConfiguration {
 		client.setMarshaller(marshaller);
 		client.setUnmarshaller(marshaller);
 		return client;
+	} */
+
+	@Bean("ssoConnection")
+    public Connection getSsoConnectionImpl() {
+        return new SsoConnectionImpl();
 	}
+	
+	/* @Bean("userConnect")
+    public UserConnect getUserConnect(UserProfile userProfile,AcquireHoKTokenByUserCredential acquireHoKTokenByUserCredential) {
+        return new UserConnect(userProfile, acquireHoKTokenByUserCredential);
+	} */
+
+	/* @Bean("acquireHoKTokenByUserCredential")
+    public AcquireHoKTokenByUserCredential getAcquireHoKTokenByUserCredential() {
+        return new AcquireHoKTokenByUserCredential();
+    } */
 
 }

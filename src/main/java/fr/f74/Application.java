@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /* import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -62,11 +63,11 @@ import java.security.NoSuchAlgorithmException; */
 // import com.vmware.common.ssl.TrustAll;
 // import com.vmware.common.samples.SystemParameters;
 
-import fr.f74.AcquireHoKTokenByUserCredentialSample;
-import fr.f74.connection.helpers.builders.*;
-import com.vmware.connection.ConnectedVimServiceBase;
-import com.vmware.connection.SsoConnection;
-import com.vmware.connection.BasicConnection;
+//import fr.f74.AcquireHoKTokenByUserCredentialSample;
+import fr.f74.connection.*;
+//import com.vmware.connection.ConnectedVimServiceBase;
+//import com.vmware.connection.SsoConnection;
+//import com.vmware.connection.BasicConnection;
 
 @SpringBootApplication
 public class Application {
@@ -75,9 +76,15 @@ public class Application {
         //SpringApplication.run(Application.class);
         ApplicationContext ctx = SpringApplication.run(Application.class, args);
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(VsphereClientConfiguration.class);
-		System.out.println(context.getBeanDefinitionCount());
-        
-        System.out.println("Let's inspect the beans provided by Spring Boot:");
+        System.out.println("Let's inspect the numbers of beans provided by Spring Boot AnnotationConfigApplicationContext:");
+        System.out.println(context.getBeanDefinitionCount());
+        String[] beanAnnotationNames = context.getBeanDefinitionNames();
+        Arrays.sort(beanAnnotationNames);
+        for (String beanAnnotationName: beanAnnotationNames) {
+            System.out.println(beanAnnotationName);
+        }
+                
+        System.out.println("Let's inspect the beans provided by Spring Boot ApplicationContext:");
         
         String[] beanNames = ctx.getBeanDefinitionNames();
         Arrays.sort(beanNames);
@@ -94,7 +101,32 @@ public class Application {
         
         Utils.trustAllHttpsCertificates();
 
-        VsphereClientAuth client = context.getBean(VsphereClientAuth.class);
+        UserConnect ssoConnection = (UserConnect) ctx.getBean("userConnect");
+        UserProfile userProfile = (UserProfile) ctx.getBean("userProfile");
+
+        ssoConnection.connect();
+        /* String url = userProfile.getUrl();
+        String ssoUrl = userProfile.getStsUrl();
+        String username = userProfile.getUsername();
+        String password =  userProfile.getPassword();
+        System.out.println("ssoConnection");
+        System.out.println("userProfile.getUrl() : " + userProfile.getUrl());
+        System.out.println("userProfile.getUsername() : " + userProfile.getUsername());
+        System.out.println("userProfile.getPassword() : " + userProfile.getPassword());
+
+        ssoConnection.setUrl(url);
+        System.out.println("ssoConnection.getUrl : " + ssoConnection.getUrl());
+        ssoConnection.setUsername(username);
+        System.out.println("ssoConnection.getUrl : " + ssoConnection.getUsername());
+        ssoConnection.setPassword(password);
+        System.out.println("ssoConnection.getUrl : " + ssoConnection.getPassword());
+        System.out.println("ssoConnection.connect()");
+        ssoConnection.connect();
+        System.out.println("après ssoConnection.connect()");
+    
+        System.out.println("ssoConnection.getHost() : " + ssoConnection.getHost()); */
+
+        //VsphereClientAuth client = context.getBean(VsphereClientAuth.class);
 
     }
 }

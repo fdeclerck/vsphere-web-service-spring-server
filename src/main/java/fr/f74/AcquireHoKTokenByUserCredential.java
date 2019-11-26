@@ -5,13 +5,11 @@ package fr.f74;
 
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+
 import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.TimeZone;
 
-/* import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession; */
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -21,10 +19,12 @@ import org.oasis_open.docs.ws_sx.ws_trust._200512.LifetimeType;
 import org.oasis_open.docs.ws_sx.ws_trust._200512.RenewingType;
 import org.oasis_open.docs.ws_sx.ws_trust._200512.RequestSecurityTokenType;
 import org.oasis_open.docs.wss._2004._01.oasis_200401_wss_wssecurity_utility_1_0.AttributedDateTime;
+
 import org.w3c.dom.Element;
 
 import com.rsa.names._2009._12.product.riat.wsdl.STSService;
 import com.rsa.names._2009._12.product.riat.wsdl.STSServicePortType;
+
 import com.vmware.sso.client.soaphandlers.HeaderHandlerResolver;
 import com.vmware.sso.client.soaphandlers.SSOHeaderHandler;
 import com.vmware.sso.client.soaphandlers.SamlTokenExtractionHandler;
@@ -34,56 +34,7 @@ import com.vmware.sso.client.soaphandlers.WsSecurityUserCertificateSignatureHand
 
 import org.springframework.stereotype.Component;
 
-/* import com.vmware.sso.client.utils.SecurityUtil;
-import com.vmware.sso.client.utils.Utils; */
 
-/**
- * This sample illustrates acquiring a Holder-Of-Key token from SSO server by
- * passing the username and password of the user along with using the user's
- * private key and certificate
- *
- * <pre>
- *  <b>Usage:</b>
- * To use a pre-generated key/certificate pair use:
- *   run.bat com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample [sso url] [username] [password]
- * ****OR*****
- * To load the key/certificate pair from individual files use:
- *   run.bat com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample [sso url] [username] [password] [path to key file] [path to certificate file]
- * ****OR*****
- * To load the key/certificate pair from a keystore use:
- *   run.bat com.vmware.sso.client.samples.AcquireHoKTokenByUserCredentialSample [sso url] [username] [password] [path to keystore file] [keystore password] [alias used in keystore]
- * </pre>
- *
- * Users can generate their own pair of private key and certificate using the
- * keytool utility shipped with the jdk. Sample usage of the keytool to generate
- * a pair would be as follows:
- *
- * <pre>
- * <b>
- *  &gt; keytool -genkey -keyalg RSA -alias sample -keystore sampleKeystore.jks -storepass sample
- *  What is your first and last name?
- *    [Unknown]:  *.vmware.com
- *  What is the name of your organizational unit?
- *    [Unknown]:  Ecosystem Engineering
- *  What is the name of your organization?
- *    [Unknown]:  VMware, Inc.
- *  What is the name of your City or Locality?
- *    [Unknown]:  Palo Alto
- *  What is the name of your State or Province?
- *    [Unknown]:  California
- *  What is the two-letter country code for this unit?
- *    [Unknown]:  US
- *  Is CN=*.vmware.com, OU=Ecosystem Engineering, O="VMware, Inc.", L=Palo Alto, ST=
- *  California, C=US correct?
- *    [no]:  yes
- *
- *  Enter key password for &lt;sample&gt;
- *          (RETURN if same as keystore password):
- * </b>
- * </pre>
- *
- * @author Ecosystem Engineering
- */
 @Component
 public class AcquireHoKTokenByUserCredential {
 
@@ -105,7 +56,8 @@ public class AcquireHoKTokenByUserCredential {
     public static Element getToken(String args[], PrivateKey privateKey,
                                    X509Certificate userCert) throws DatatypeConfigurationException {
 		/* Instantiating the STSService */
-        STSService stsService = new STSService();
+		STSService stsService = new STSService();
+		System.out.println("getToken : username : " + args[1] + " password : " + args[2] + " ssourl : " + args[0]);
 
 		/*
 		 * Instantiating the HeaderHandlerResolver. This is required to provide
@@ -235,6 +187,7 @@ public class AcquireHoKTokenByUserCredential {
 		 * Invoke the "issue" method on the STSService object to acquire the
 		 * token from SSO Server
 		 */
+		System.out.println("stsPort.issue(tokenType);");
         stsPort.issue(tokenType);
 
         // SamlTokenExtractionHandler will now contain the raw SAML token for

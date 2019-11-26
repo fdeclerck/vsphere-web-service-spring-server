@@ -56,8 +56,8 @@ import com.vmware.vim25.VimService; */
 //import com.vmware.vsphere.soaphandlers.HeaderCookieExtractionHandler;
 //fin de login
 
-@Component
-public class UserConnect {
+@RestController
+public class UserConnectRest {
 
     @Autowired
     private UserProfile userProfile;
@@ -65,7 +65,8 @@ public class UserConnect {
    @Autowired
     private AcquireHoKTokenByUserCredential acquireHoKTokenByUserCredential;
 
-    public String connect() {
+    @RequestMapping("/userconnect")
+    public String userconnect() {
 
         HostnameVerifier hv = new HostnameVerifier() {
         @Override
@@ -97,23 +98,7 @@ public class UserConnect {
             System.out.println("userconnect() exception : " + e.getMessage());
             
         }
-        
-        return "userconnect";
 
-    }
-    
-    public VimService setupVimService(Element token, SSOHeaderHandler... handlers) {
-        VimService vimSvc = new VimService();
-        HeaderHandlerResolver handlerResolver = new HeaderHandlerResolver();
-        handlerResolver.addHandler(new TimeStampHandler());
-        handlerResolver.addHandler(new SamlTokenHandler(token));
-        handlerResolver.addHandler(new WsSecuritySignatureAssertionHandler(
-                privateKey, certificate, Utils
-                .getNodeProperty(token, "ID")));
-        for (SSOHeaderHandler handler : handlers) {
-            handlerResolver.addHandler(handler);
-        }
-        vimSvc.setHandlerResolver(handlerResolver);
-        return vimSvc;
-    }
+        return "userconnect";
+    } 
 }
