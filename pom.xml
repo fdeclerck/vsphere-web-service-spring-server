@@ -30,6 +30,12 @@
             <version>2.2.1.RELEASE</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jvnet.jax-ws-commons.spring</groupId>
+            <artifactId>jaxws-spring</artifactId>
+            <version>1.9</version>
+        </dependency>
+
  <!--        <dependency>
             <groupId>org.springframework.ws</groupId>
             <artifactId>spring-ws-security</artifactId>
@@ -104,6 +110,36 @@ mvn install:install-file -Dfile=./lib/vim25.jar -DgroupId=com.vmware -DartifactI
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>0.14.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <schemaLanguage>AUTODETECT</schemaLanguage>
+                    <generatePackage>fr.f74.vim25</generatePackage>
+                    <schemas>
+                        <schema>
+                            <fileset>
+                                <directory>${basedir}/src/main/resources</directory>
+                                <includes>
+                                    <include>*.xsd</include>
+                                    <include>vim.wsdl</include>
+                                </includes>
+                                <excludes>
+                                    <exclude>*.xs</exclude>
+                                </excludes>
+                            </fileset>
+                        </schema>
+                    </schemas>
+                </configuration>
+            </plugin> -->
          </plugins>
     </build>
 

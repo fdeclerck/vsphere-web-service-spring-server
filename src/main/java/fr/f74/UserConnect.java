@@ -29,12 +29,12 @@ import java.util.Map;
 //import javax.net.ssl.HostnameVerifier;
 //import javax.net.ssl.HttpsURLConnection;
 //import javax.net.ssl.SSLSession;
-import javax.xml.datatype.DatatypeConfigurationException;
+/* import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.soap.SOAPFaultException;
+import javax.xml.ws.soap.SOAPFaultException; */
 
 //import org.w3c.dom.Element;
 
@@ -62,8 +62,11 @@ public class UserConnect {
     @Autowired
     private UserProfile userProfile;
 
-   @Autowired
+    @Autowired
     private AcquireHoKTokenByUserCredential acquireHoKTokenByUserCredential;
+
+    @Autowired
+    private LoginByToken loginByToken;
 
     public String connect() {
 
@@ -90,6 +93,11 @@ public class UserConnect {
             Element token = acquireHoKTokenByUserCredential.getToken(userProfile.getArgsCnx(), userProfile.getPrivateKey(), userProfile.getCertificate());
             Utils.printToken(token);
             //loginUsingSAMLToken(token,userProfile.getUrl(),userProfile.getPrivateKey(), userProfile.getCertificate());
+            //loginByToken.getSessionCookieUsingHokToken(token, userProfile.getUrl(),userProfile.getPrivateKey(), userProfile.getCertificate());
+            String Cookie = loginByToken.loginUsingSAMLToken(token,userProfile.getUrl(),userProfile.getPrivateKey(), userProfile.getCertificate());
+            loginByToken.getCurrentTime();
+            loginByToken.logout();
+
 
 
         } catch (Exception e) {
@@ -102,7 +110,7 @@ public class UserConnect {
 
     }
     
-    public VimService setupVimService(Element token, SSOHeaderHandler... handlers) {
+/*     public VimService setupVimService(Element token, SSOHeaderHandler... handlers) {
         VimService vimSvc = new VimService();
         HeaderHandlerResolver handlerResolver = new HeaderHandlerResolver();
         handlerResolver.addHandler(new TimeStampHandler());
@@ -115,5 +123,5 @@ public class UserConnect {
         }
         vimSvc.setHandlerResolver(handlerResolver);
         return vimSvc;
-    }
+    } */
 }

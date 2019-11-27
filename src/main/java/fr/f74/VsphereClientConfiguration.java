@@ -6,9 +6,9 @@ import fr.f74.connection.*;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-//import org.springframework.context.annotation.PropertySource;
-//import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-//import org.springframework.ws.client.support.interceptor.ClientInterceptor;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.ws.client.support.interceptor.ClientInterceptor;
 //import org.springframework.ws.soap.security.wss4j.Wss4jSecurityInterceptor;
 
 @Configuration
@@ -17,10 +17,10 @@ public class VsphereClientConfiguration {
 
 	//@Inject Environment env;
 
-/* 	@Bean
+	/* @Bean
 	public Jaxb2Marshaller marshaller() {
 		Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setContextPath("com.vmware.vim25");
+		marshaller.setContextPath("fr.f74.vim25");
 		return marshaller;
 	}
 
@@ -31,8 +31,8 @@ public class VsphereClientConfiguration {
 		client.setMarshaller(marshaller);
 		client.setUnmarshaller(marshaller);
 		return client;
-	} */
-
+	}
+ */
 	@Bean("ssoConnection")
     public Connection getSsoConnectionImpl() {
         return new SsoConnectionImpl();
