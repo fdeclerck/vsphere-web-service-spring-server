@@ -39,6 +39,20 @@ import com.vmware.vim25.RuntimeFaultFaultMsg;
 import com.vmware.vim25.ServiceContent;
 import com.vmware.vim25.VimPortType;
 import com.vmware.vim25.VimService;
+import com.vmware.vim25.ArrayOfPerfCounterInfo;
+import com.vmware.vim25.PerfCounterInfo;
+import com.vmware.vim25.PerfSummaryType;
+import com.vmware.vim25.ElementDescription;
+import com.vmware.vim25.PropertyFilterSpec;
+import com.vmware.vim25.ObjectContent;
+import com.vmware.vim25.RetrieveOptions;
+import com.vmware.vim25.RetrieveResult;
+import com.vmware.vim25.DynamicProperty;
+import com.vmware.vim25.InvalidPropertyFaultMsg;
+
+import com.vmware.connection.helpers.builders.*;
+//import com.vmware.connection.helpers.*;
+//import com.vmware.connection.helpers.GetMOREF;
 import com.vmware.vsphere.soaphandlers.HeaderCookieExtractionHandler;
 
 /**
@@ -68,7 +82,7 @@ public class LoginByToken {
 
    private static ServiceContent serviceContent;
    private static boolean isConnected;
-
+   
    /**
     * Method to clear the HandlerResolver chain
     * 
@@ -146,13 +160,13 @@ public class LoginByToken {
          InvalidLoginFaultMsg {
 
       // Setting up the configuration for ignoring the SSL certificates
-      HostnameVerifier hv = new HostnameVerifier() {
+      /* HostnameVerifier hv = new HostnameVerifier() {
          @Override
          public boolean verify(String urlHostName, SSLSession session) {
             return true;
          }
       };
-      HttpsURLConnection.setDefaultHostnameVerifier(hv);
+      HttpsURLConnection.setDefaultHostnameVerifier(hv); */
 
       // The process we are going to follow is described below:
       // 1. Retrieve the ServiceContent
@@ -295,4 +309,209 @@ public class LoginByToken {
       clearHandlerResolver(vcServerUrl, cookie);
       return cookie;
    }
+
+   public void getCounters() 
+   throws InvalidPropertyFaultMsg, RuntimeFaultFaultMsg {
+        //propCollectorRef = serviceContent.getPropertyCollector();
+        ManagedObjectReference perfMgr = serviceContent.getPerfManager();
+        Object property = this.entityProps(perfMgr, new String[] { "perfCounter" }).get(
+                "perfCounter");
+        ArrayOfPerfCounterInfo arrayCounter = (ArrayOfPerfCounterInfo) property;
+        List<PerfCounterInfo> counters = arrayCounter.getPerfCounterInfo();
+        System.out.println("Performance counters (averages only):");
+        System.out.println("-------------------------------------");
+        for (PerfCounterInfo counter : counters) {
+            if (counter.getRollupType() == PerfSummaryType.AVERAGE) {
+                ElementDescription desc = counter.getNameInfo();
+                System.out.println(desc.getLabel() + ": " + desc.getSummary());
+            }
+        }
+        System.out.println();
+    }
+
+    public Map<String, Object> entityProps(
+            ManagedObjectReference entityMor, String[] props) 
+            throws InvalidPropertyFaultMsg, RuntimeFaultFaultMsg {
+
+        final HashMap<String, Object> retVal = new HashMap<String, Object>();
+
+        // Create PropertyFilterSpec using the PropertySpec and ObjectPec
+        PropertyFilterSpec[] propertyFilterSpecs = {
+                new PropertyFilterSpecBuilder()
+                .propSet(
+                        // Create Property Spec
+                        new PropertySpecBuilder()
+                            .all(Boolean.FALSE)
+                            .type(entityMor.getType())
+                            .pathSet(props)
+                )
+                .objectSet(
+                        // Now create Object Spec
+                        new ObjectSpecBuilder()
+                                .obj(entityMor)
+                )
+        };
+
+        List<ObjectContent> oCont =
+                vimPort.retrievePropertiesEx(serviceContent.getPropertyCollector(),
+                        Arrays.asList(propertyFilterSpecs), new RetrieveOptions()).getObjects();
+
+        if (oCont != null) {
+            for (ObjectContent oc : oCont) {
+                List<DynamicProperty> dps = oc.getPropSet();
+                for (DynamicProperty dp : dps) {
+                    retVal.put(dp.getName(), dp.getVal());
+                }
+            }
+        }
+        return retVal;
+    }
+
+    public Map<String, ManagedObjectReference> inFolderByType(
+            final ManagedObjectReference folder, final String morefType, final RetrieveOptions retrieveOptions
+    ) throws RuntimeFaultFaultMsg, InvalidPropertyFaultMsg {
+        final PropertyFilterSpec[] propertyFilterSpecs = propertyFilterSpecs(folder, morefType, "name");
+
+        // reuse this property collector again later to scroll through results
+        final ManagedObjectReference propertyCollector = serviceContent.getPropertyCollector();
+
+        RetrieveResult results = vimPort.retrievePropertiesEx(
+                propertyCollector,
+                Arrays.asList(propertyFilterSpecs),
+                retrieveOptions);
+
+        final Map<String, ManagedObjectReference> tgtMoref =
+                new HashMap<String, ManagedObjectReference>();
+        while(results != null && !results.getObjects().isEmpty()) {
+            resultsToTgtMorefMap(results, tgtMoref);
+            final String token = results.getToken();
+            // if we have a token, we can scroll through additional results, else there's nothing to do.
+            results =
+                    (token != null) ?
+                            vimPort.continueRetrievePropertiesEx(propertyCollector,token) : null;
+        }
+
+        return tgtMoref;
+    }
+
+    public Map<String,ManagedObjectReference> inFolderByType(ManagedObjectReference folder, String morefType) throws RuntimeFaultFaultMsg, InvalidPropertyFaultMsg {
+        return inFolderByType(folder,morefType, new RetrieveOptions());
+    }
+
+    public Map<String, ManagedObjectReference> inventory() throws InvalidPropertyFaultMsg, RuntimeFaultFaultMsg {
+        return this.inFolderByType(serviceContent.getRootFolder(), "ManagedEntity");
+    }
+
+    public void printInventory() throws InvalidPropertyFaultMsg, RuntimeFaultFaultMsg {
+        Map<String, ManagedObjectReference> inventory = inventory();
+
+        String entityTypeVM = "VirtualMachine";
+        String entityType = "entityType";
+        String entityID = "entityID";
+
+        StringBuilder sb =  new StringBuilder() ;  
+
+        int count = 0;
+        String nbVMs = "0";
+        for (String entityName : inventory.keySet()) {
+
+            entityType = inventory.get(entityName).getType();
+            entityID = inventory.get(entityName).getValue();
+            sb.setLength(0);
+            if (entityType.matches(entityTypeVM)) {
+                count = ++  count;
+                String stringBuilt = sb.append("===> ").append(entityType).append(":").append(entityName).append("{").append(entityID).append("}").toString();     
+            System.out.println(stringBuilt);
+            }
+        }
+        //nbVMs = Integer.toString(count);
+        //System.out.println("====>>> NB VMs : " + nbVMs);
+    }
+
+    public void printCountVMs() throws InvalidPropertyFaultMsg, RuntimeFaultFaultMsg {
+        Map<String, ManagedObjectReference> inventory = inventory();
+
+        String entityTypeVM = "VirtualMachine";
+        String entityType = "entityType";
+        
+        int count = 0;
+        String nbVMs = "0";
+        for (String entityName : inventory.keySet()) {
+
+            entityType = inventory.get(entityName).getType();
+            
+            if (entityType.matches(entityTypeVM)) {
+                count = ++  count;
+            }
+        }
+        nbVMs = Integer.toString(count);
+        System.out.println("====>>> NB VMs : " + nbVMs);
+    }
+
+    public PropertyFilterSpec[] propertyFilterSpecs(
+            ManagedObjectReference container,
+            String morefType,
+            String... morefProperties
+    ) throws RuntimeFaultFaultMsg {
+        
+        ManagedObjectReference viewManager = serviceContent.getViewManager();
+        ManagedObjectReference containerView =
+                vimPort.createContainerView(viewManager, container,
+                        Arrays.asList(morefType), true);
+
+        return new PropertyFilterSpec[]{
+                new PropertyFilterSpecBuilder()
+                        .propSet(
+                                new PropertySpecBuilder()
+                                        .all(Boolean.FALSE)
+                                        .type(morefType)
+                                        .pathSet(morefProperties)
+                        )
+                        .objectSet(
+                                new ObjectSpecBuilder()
+                                        .obj(containerView)
+                                        .skip(Boolean.TRUE)
+                                        .selectSet(
+                                                new TraversalSpecBuilder()
+                                                        .name("view")
+                                                        .path("view")
+                                                        .skip(false)
+                                                        .type("ContainerView")
+                                        )
+                        )
+        };
+    }
+
+    public RetrieveResult containerViewByType(
+            final ManagedObjectReference container,
+            final String morefType,
+            final String[] morefProperties,
+            final RetrieveOptions retrieveOptions,
+            final PropertyFilterSpec... propertyFilterSpecs
+    ) throws RuntimeFaultFaultMsg, InvalidPropertyFaultMsg {
+        
+        return vimPort.retrievePropertiesEx(
+                serviceContent.getPropertyCollector(),
+                Arrays.asList(propertyFilterSpecs),
+                retrieveOptions
+        );
+    }
+
+    private void resultsToTgtMorefMap(RetrieveResult results, Map<String, ManagedObjectReference> tgtMoref) {
+        List<ObjectContent> oCont = (results != null) ? results.getObjects() : null;
+
+        if (oCont != null) {
+            for (ObjectContent oc : oCont) {
+                ManagedObjectReference mr = oc.getObj();
+                String entityNm = null;
+                List<DynamicProperty> dps = oc.getPropSet();
+                if (dps != null) {
+                    for (DynamicProperty dp : dps) {
+                        entityNm = (String) dp.getVal();
+                    }
+                }
+                tgtMoref.put(entityNm, mr);
+            }
+        }
+    }
 }

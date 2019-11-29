@@ -64,7 +64,7 @@ import java.security.NoSuchAlgorithmException; */
 // import com.vmware.common.samples.SystemParameters;
 
 //import fr.f74.AcquireHoKTokenByUserCredentialSample;
-import fr.f74.connection.*;
+//import fr.f74.connection.*;
 //import com.vmware.connection.ConnectedVimServiceBase;
 //import com.vmware.connection.SsoConnection;
 //import com.vmware.connection.BasicConnection;
@@ -75,14 +75,14 @@ public class Application {
     public static void main(String[] args) {
         //SpringApplication.run(Application.class);
         ApplicationContext ctx = SpringApplication.run(Application.class, args);
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(VsphereClientConfiguration.class);
+        /* AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(VsphereClientConfiguration.class);
         System.out.println("Let's inspect the numbers of beans provided by Spring Boot AnnotationConfigApplicationContext:");
         System.out.println(context.getBeanDefinitionCount());
         String[] beanAnnotationNames = context.getBeanDefinitionNames();
         Arrays.sort(beanAnnotationNames);
         for (String beanAnnotationName: beanAnnotationNames) {
             System.out.println(beanAnnotationName);
-        }
+        } */
                 
         System.out.println("Let's inspect the beans provided by Spring Boot ApplicationContext:");
         

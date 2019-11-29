@@ -70,18 +70,18 @@ public class UserConnect {
 
     public String connect() {
 
-        HostnameVerifier hv = new HostnameVerifier() {
+        /* HostnameVerifier hv = new HostnameVerifier() {
         @Override
         public boolean verify(String urlHostName, SSLSession session) {
             return true;
         }
-        };
+        }; */
 
         try {
 
-            HttpsURLConnection.setDefaultHostnameVerifier(hv);
+            /* HttpsURLConnection.setDefaultHostnameVerifier(hv);
 
-            Utils.trustAllHttpsCertificates();
+            Utils.trustAllHttpsCertificates(); */
             
             //loadUserCert();
 
@@ -89,13 +89,22 @@ public class UserConnect {
 
             userProfile.setPrivateKey();
             userProfile.setCertificate();
-            System.out.println("token = acquireHoKTokenByUserCredential.getToken");
+            
+            //System.out.println("token = acquireHoKTokenByUserCredential.getToken");
+            
             Element token = acquireHoKTokenByUserCredential.getToken(userProfile.getArgsCnx(), userProfile.getPrivateKey(), userProfile.getCertificate());
-            Utils.printToken(token);
-            //loginUsingSAMLToken(token,userProfile.getUrl(),userProfile.getPrivateKey(), userProfile.getCertificate());
-            //loginByToken.getSessionCookieUsingHokToken(token, userProfile.getUrl(),userProfile.getPrivateKey(), userProfile.getCertificate());
+            
+            //Utils.printToken(token);
+            
             String Cookie = loginByToken.loginUsingSAMLToken(token,userProfile.getUrl(),userProfile.getPrivateKey(), userProfile.getCertificate());
+            
             loginByToken.getCurrentTime();
+            
+            //loginByToken.getCounters();
+            
+            //loginByToken.printInventory();
+            
+            loginByToken.printCountVMs();
             loginByToken.logout();
 
 
